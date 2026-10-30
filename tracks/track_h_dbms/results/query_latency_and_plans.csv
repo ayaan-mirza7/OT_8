@@ -1,0 +1,5 @@
+Query,Baseline_Latency_ms,Optimized_Latency_ms,Speedup,Baseline_Plan,Optimized_Plan
+Q1,1.632,0.01,165.44,SCAN lineitem,SEARCH lineitem USING INDEX idx_lineitem_ship_disc (l_shipdate=? AND l_discount<?)
+Q2,1.757,0.42,4.19,SCAN l | SEARCH o USING INTEGER PRIMARY KEY (rowid=?) | SEARCH c USING INTEGER PRIMARY KEY (rowid=?),SCAN o | SEARCH c USING INTEGER PRIMARY KEY (rowid=?) | SEARCH l USING INDEX idx_lineitem_orderkey (l_orderkey=?)
+Q3,0.723,0.934,0.77,SCAN lineitem,SCAN lineitem
+Q4,0.267,0.028,9.68,SCAN orders,SEARCH orders USING INDEX idx_orders_custkey (o_custkey=?)

@@ -1,0 +1,7 @@
+{
+  "static_makespan": 32531.0,
+  "static_imbalance": 1.1634419369836557,
+  "work_stealing_makespan": 32210.05,
+  "work_stealing_imbalance": 1.1013865618054368,
+  "steals_count": 2
+}

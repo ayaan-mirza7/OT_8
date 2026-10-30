@@ -1,0 +1,6 @@
+Stage,Code_Size_Insts,Dynamic_Insts_Executed,Cycle_Count,Runtime_ms
+Unoptimized,28,423,578,2.420100034214556
+Pass 1: Constant Folding,28,423,472,2.205300028435886
+Pass 2: CSE,28,423,472,2.697100047953427
+Pass 3: DCE,15,361,410,2.04149994533509
+Pass 4: LICM (Fully Optimized),15,312,361,1.7837999621406198

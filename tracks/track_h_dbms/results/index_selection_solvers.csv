@@ -1,0 +1,3 @@
+method,selected_indexes,selected_indices,total_benefit_ms,storage_used_kb,runtime_ms
+Greedy Benefit-to-Storage,"['idx_lineitem_ship_disc', 'idx_lineitem_orderkey', 'idx_orders_custkey']","[np.int64(0), np.int64(2), np.int64(4)]",2.8011800022795796,200.0,5.320900003425777
+Exact ILP Knapsack,"['idx_lineitem_ship_disc', 'idx_lineitem_orderkey', 'idx_orders_custkey']","[0, 2, 4]",2.8011800022795796,200.0,89.96360003948212

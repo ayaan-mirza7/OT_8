@@ -1,0 +1,4 @@
+method,num_selected_tests,total_duration_ms,duration_savings_%,branches_covered,coverage_percentage,apfd_score,optimization_runtime_ms
+Baseline All Tests (Unoptimized),40,2062.2,0.0,50,100.0,0.6799999999999999,0.0
+Greedy Additional Coverage,13,327.6,84.11,50,100.0,0.73,0.42
+Exact ILP Set Cover,11,285.0,86.18,50,100.0,0.6575,140.94

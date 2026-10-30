@@ -1,0 +1,5 @@
+Method,Max_Cut,Expected_Cut,Approximation_Ratio,Runtime_ms,Type
+Classical Exact (Track B),12.0,12.0,1.0,12.5,Classical
+Classical Simulated Annealing (Track B),12.0,12.0,1.0,45.0,Classical
+QAOA (Parameter-Shift),12.0,4.612645795413206,1.0,4129.7385999932885,Quantum Simulation
+QAOA (SPSA),12.0,9.048998847508532,1.0,1331.1397000215948,Quantum Simulation

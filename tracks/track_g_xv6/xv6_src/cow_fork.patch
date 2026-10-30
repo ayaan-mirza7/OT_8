@@ -1,0 +1,60 @@
+diff --git a/kernel/kalloc.c b/kernel/kalloc.c
+--- a/kernel/kalloc.c
++++ b/kernel/kalloc.c
+@@ -23,6 +23,43 @@ struct {
+   struct run *freelist;
+ } kmem;
+ 
++// Reference count array for physical pages (COW support)
++// Student: Ayaan Mirza (Roll No: 241070043)
++struct spinlock ref_lock;
++int page_ref[(PHYSTOP - KERNBASE) / PGSIZE];
++
++int get_ref(uint64 pa) {
++  acquire(&ref_lock);
++  int r = page_ref[(pa - KERNBASE) / PGSIZE];
++  release(&ref_lock);
++  return r;
++}
++
++void inc_ref(uint64 pa) {
++  acquire(&ref_lock);
++  page_ref[(pa - KERNBASE) / PGSIZE]++;
++  release(&ref_lock);
++}
++
++void dec_ref(uint64 pa) {
++  acquire(&ref_lock);
++  int idx = (pa - KERNBASE) / PGSIZE;
++  page_ref[idx]--;
++  int r = page_ref[idx];
++  release(&ref_lock);
++  if(r == 0) {
++    kfree((void*)pa);
++  }
++}
+diff --git a/kernel/vm.c b/kernel/vm.c
+--- a/kernel/vm.c
++++ b/kernel/vm.c
+@@ -320,6 +320,24 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
+       panic("uvmcopy: page not present");
+     pa = PTE2PA(*pte);
+     flags = PTE_FLAGS(*pte);
++    
++    // COW Optimization: Clear PTE_W (write) flag and set PTE_COW (bit 8)
++    if(flags & PTE_W) {
++      flags = (flags & ~PTE_W) | PTE_COW;
++      *pte = PA2PTE(pa) | flags; // update parent PTE
++    }
++    
++    // Share physical page instead of duplicating memory immediately
++    if(mappages(new, i, PGSIZE, pa, flags) != 0) {
++      goto err;
++    }
++    inc_ref(pa);
++  }
++  return 0;
++err:
++  uvmunmap(new, 0, i / PGSIZE, 1);
++  return -1;
+ }

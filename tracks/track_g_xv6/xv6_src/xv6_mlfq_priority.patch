@@ -1,0 +1,127 @@
+diff --git a/kernel/param.h b/kernel/param.h
+--- a/kernel/param.h
++++ b/kernel/param.h
+@@ -12,3 +12,7 @@
+ #define MAXOPBLOCKS  10  // max # of blocks any FS op writes
+ #define LOGSIZE      (MAXOPBLOCKS*3) // max data blocks in on-disk log
+ #define NBUF         (MAXOPBLOCKS*3) // size of disk cache
++#define MLFQ_LEVELS  3   // Number of MLFQ Priority Queues
++#define MLFQ_BOOST   100 // Ticks between global priority boosts (starvation prevention)
++#define STRIDE_LARGE 10000 // Large constant for Stride Calculation
+diff --git a/kernel/proc.h b/kernel/proc.h
+--- a/kernel/proc.h
++++ b/kernel/proc.h
+@@ -87,6 +87,14 @@ struct proc {
+   char name[16];               // Process name (debugging)
++  // Scheduling Optimization Fields (Ayaan Mirza - 241070043)
++  int queue_level;             // Current MLFQ queue: 0 (highest), 1, 2 (lowest)
++  int ticks_used;              // Ticks consumed in current time slice
++  int total_ticks;             // Cumulative runtime ticks
++  int priority;                // Static base priority (1 to 10)
++  int tickets;                 // Proportional-share lottery/stride tickets
++  int stride;                  // Stride value = STRIDE_LARGE / tickets
++  int pass;                    // Current pass value for Stride Scheduling
+ };
+diff --git a/kernel/proc.c b/kernel/proc.c
+--- a/kernel/proc.c
++++ b/kernel/proc.c
+@@ -105,6 +105,12 @@ allocproc(void)
+ found:
+   p->pid = allocpid();
+   p->state = USED;
++  p->queue_level = 0;          // Enter at highest priority queue Q0
++  p->ticks_used = 0;
++  p->total_ticks = 0;
++  p->priority = 5;
++  p->tickets = 10;
++  p->stride = STRIDE_LARGE / p->tickets;
++  p->pass = 0;
+ 
+   // Allocate a trapframe page.
+   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
+@@ -440,28 +446,75 @@ scheduler(void)
+ {
+   struct proc *p;
+   struct cpu *c = mycpu();
+   c->proc = 0;
++  int global_ticks = 0;
++  int time_quanta[MLFQ_LEVELS] = { 1, 4, 8 };
++
+   for(;;){
+     // Avoid deadlock by enabling interrupts.
+     intr_on();
+ 
++    // Periodic Priority Boost every MLFQ_BOOST ticks to prevent starvation
++    global_ticks++;
++    if(global_ticks >= MLFQ_BOOST){
++      global_ticks = 0;
++      for(p = proc; p < &proc[NPROC]; p++){
++        acquire(&p->lock);
++        if(p->state == RUNNABLE){
++          p->queue_level = 0;
++          p->ticks_used = 0;
++        }
++        release(&p->lock);
++      }
++    }
++
++    // MLFQ Preemptive Priority Selection: Scan queues Q0 -> Q1 -> Q2
++    int found = 0;
++    for(int q = 0; q < MLFQ_LEVELS; q++){
++      for(p = proc; p < &proc[NPROC]; p++){
++        acquire(&p->lock);
++        if(p->state == RUNNABLE && p->queue_level == q){
++          // Context switch to selected process
++          p->state = RUNNING;
++          c->proc = p;
++          swtch(&c->context, &p->context);
++
++          // Process yielded or completed time quantum
++          p->total_ticks++;
++          p->ticks_used++;
++          p->pass += p->stride;
++
++          // Check if time quantum for this queue expired
++          if(p->ticks_used >= time_quanta[q]){
++            p->ticks_used = 0;
++            // Demote to next lower priority queue if not already at bottom
++            if(p->queue_level < MLFQ_LEVELS - 1){
++              p->queue_level++;
++            }
++          }
++
++          c->proc = 0;
++          found = 1;
++          release(&p->lock);
++          break;
++        }
++        release(&p->lock);
++      }
++      if(found) break;
++    }
+   }
+ }
+diff --git a/kernel/sysproc.c b/kernel/sysproc.c
+--- a/kernel/sysproc.c
++++ b/kernel/sysproc.c
+@@ -95,3 +95,20 @@ sys_uptime(void)
+   release(&tickslock);
+   return xticks;
+ }
++
++// Syscall to set process priority / tickets
++uint64
++sys_setpriority(void)
++{
++  int priority;
++  argint(0, &priority);
++  if(priority < 1 || priority > 100) return -1;
++  
++  struct proc *p = myproc();
++  acquire(&p->lock);
++  p->priority = priority;
++  p->tickets = priority;
++  p->stride = STRIDE_LARGE / priority;
++  release(&p->lock);
++  return 0;
++}

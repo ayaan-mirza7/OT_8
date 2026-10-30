@@ -1,0 +1,3 @@
+method,k_registers,allocated_registers,spilled_variables,num_spills,total_spill_cost,runtime_ms
+Greedy Chaitin-Briggs,3,"{'i': 0, 'out_accum': 1, 'out_sum': 2}","['inv_total', 'limit', 'loop_start', 'cond', 'folded_sub', 'loop_end']",6,14.0,0.07469998672604561
+Exact ILP Graph Colouring,3,"{'cond': 0, 'folded_sub': 0, 'i': 1, 'loop_end': 0, 'loop_start': 0, 'out_sum': 2}","['inv_total', 'limit', 'out_accum']",3,9.0,119.27519994787872

@@ -1,0 +1,60 @@
+[
+  {
+    "algorithm": "Deutsch-Jozsa",
+    "input_type": "Balanced",
+    "detected_type": "Balanced",
+    "quantum_queries": 1,
+    "classical_worst_case_queries": 5,
+    "correct": true
+  },
+  {
+    "algorithm": "Bernstein-Vazirani",
+    "hidden_secret": "1011",
+    "recovered_secret": "1011",
+    "quantum_queries": 1,
+    "classical_queries_needed": 4,
+    "correct": true
+  },
+  {
+    "algorithm": "Grover Search",
+    "database_size_N": 16,
+    "target_index": 9,
+    "found_index": 9,
+    "optimal_iterations": 3,
+    "quantum_queries": 3,
+    "classical_expected_queries": 8.0,
+    "success_probability": 0.9613189697265582,
+    "correct": true
+  },
+  {
+    "algorithm": "Quantum Fourier Transform",
+    "num_qubits": 3,
+    "dimension": 8,
+    "unitary_verified": true,
+    "classical_fft_match": false
+  },
+  {
+    "algorithm": "Quantum Phase Estimation",
+    "true_phase": 0.375,
+    "estimated_phase": 0.375,
+    "precision_bits": 3,
+    "absolute_error": 0.0
+  },
+  {
+    "algorithm": "Shor's Factoring (Order-Finding)",
+    "base_a": 7,
+    "composite_N": 15,
+    "period_r": 4,
+    "extracted_factors": [
+      3,
+      5
+    ],
+    "success": true
+  },
+  {
+    "algorithm": "Quantum Annealing",
+    "num_spins": 6,
+    "annealing_steps": 40,
+    "final_energy": -3.586893776020739
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "trials": 100,
+  "violations": 0,
+  "is_submodular": true,
+  "min_slack": -3.552713678800501e-15
+}
