@@ -63,6 +63,15 @@ Clone the repository and install the standard scientific computing packages:
 ```bash
 git clone https://github.com/ayaanmirza/OT_8.git
 cd OT_8
+
+# Optional: Create and activate a virtual environment
+python -m venv .venv
+# On Windows:
+.venv\Scripts\Activate.ps1
+# On Linux / macOS:
+source .venv/bin/activate
+
+# Install dependencies
 python -m pip install -r requirements.txt
 ```
 
@@ -74,6 +83,11 @@ python -m pip install -r requirements.txt
 To execute the comprehensive correctness test suite across all tracks:
 ```bash
 python -m pytest tests/
+```
+To run tests for an isolated track (e.g., Track A or Track E):
+```bash
+python -m pytest tests/test_all_tracks.py -k "track_a"
+python -m pytest tests/test_all_tracks.py -k "track_e"
 ```
 Expected output:
 ```text
