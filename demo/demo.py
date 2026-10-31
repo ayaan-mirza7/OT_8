@@ -19,6 +19,13 @@ def print_header():
     print("   Student Name: Ayaan Mirza  |  Roll No: 241070043")
     print("=" * 76)
 
+def print_usage():
+    print("Usage: python demo/demo.py [TRACK_ID | ALL | --help]")
+    print("\nAvailable options:")
+    print("  A-J         Run benchmark for a specific track (e.g., 'python demo/demo.py E')")
+    print("  ALL         Run all 10 tracks sequentially")
+    print("  -h, --help  Show this help message and exit")
+
 def run_track(choice: str):
     c = choice.upper().strip()
     if c == 'A':
@@ -71,7 +78,11 @@ def run_track(choice: str):
 def main():
     print_header()
     if len(sys.argv) > 1:
-        run_track(sys.argv[1])
+        arg = sys.argv[1].strip()
+        if arg in ('-h', '--help', 'help'):
+            print_usage()
+            return
+        run_track(arg)
         return
 
     print("\nSelect an Experiment Track to run:")
