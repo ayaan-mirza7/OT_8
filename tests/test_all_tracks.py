@@ -84,7 +84,7 @@ def test_track_c_parameter_shift_rule():
 
 # Track D Tests
 from tracks.track_d_parallel_distributed.submodular import FacilityLocationSubmodular
-from core.metrics import amdahls_law, gustafsons_law, jains_fairness_index
+from core.metrics import amdahls_law, gustafsons_law, jains_fairness_index, speedup_and_efficiency, apfd_score
 
 def test_track_d_submodular_diminishing_returns():
     fac = FacilityLocationSubmodular(num_facilities=8, num_targets=20, seed=42)
@@ -96,6 +96,19 @@ def test_track_d_amdahl_and_jain_fairness():
     assert sp > 1.0
     allocations = [10, 10, 10, 10]
     assert jains_fairness_index(allocations) == 1.0
+
+def test_core_speedup_and_efficiency():
+    speedup, efficiency = speedup_and_efficiency(t_serial=10.0, t_parallel=2.5, num_workers=4)
+    assert abs(speedup - 4.0) < 1e-6
+    assert abs(efficiency - 1.0) < 1e-6
+
+def test_core_apfd_perfect_detection():
+    fault_matrix = np.array([
+        [1, 1],
+        [0, 0]
+    ])
+    score = apfd_score(test_order=[0, 1], fault_matrix=fault_matrix)
+    assert abs(score - 0.75) < 1e-6
 
 # Track F Tests
 from tracks.track_f_compiler.ir import Instruction
