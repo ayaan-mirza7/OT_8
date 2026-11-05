@@ -91,8 +91,8 @@ python -m pytest tests/test_all_tracks.py -k "track_e"
 ```
 Expected output:
 ```text
-tests\test_all_tracks.py ............ [100%]
-12 passed in 1.43s
+tests\test_all_tracks.py ..............                                  [100%]
+14 passed in 0.74s
 ```
 
 ### 2. Run Interactive Demonstration CLI

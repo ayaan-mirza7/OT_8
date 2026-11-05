@@ -66,6 +66,62 @@ def clean_markdown_text(text: str) -> str:
     t = t.replace('$\\min', 'min').replace('$\\sum', 'sum').replace('$', '')
     return t
 
+def build_reportlab_table(raw_lines, th_style, tb_style, total_width=504):
+    """Converts markdown table lines into a styled ReportLab Table object."""
+    rows = []
+    for line in raw_lines:
+        parts = [p.strip() for p in line.strip().strip('|').split('|')]
+        # Skip markdown separator row
+        if parts and all(re.match(r'^:?-+:?$', p) for p in parts):
+            continue
+        rows.append(parts)
+
+    if not rows:
+        return None
+
+    num_cols = len(rows[0])
+    # Normalize rows to same column length
+    normalized_rows = []
+    for r_idx, row in enumerate(rows):
+        cur_row = []
+        style = th_style if r_idx == 0 else tb_style
+        for c_idx in range(num_cols):
+            cell_val = row[c_idx] if c_idx < len(row) else ""
+            clean_val = clean_markdown_text(cell_val)
+            cur_row.append(Paragraph(clean_val, style))
+        normalized_rows.append(cur_row)
+
+    # Column widths distribution
+    if num_cols == 6:
+        # Benchmark summary table: Track, Domain, Baseline, Optimized, Improvement, Verification
+        col_widths = [52, 82, 92, 92, 96, 90]
+    elif num_cols == 5:
+        # AI tools register table: Tool, Model, Tracks, Dates, Work
+        col_widths = [84, 80, 80, 80, 180]
+    else:
+        w = total_width / max(num_cols, 1)
+        col_widths = [w] * num_cols
+
+    t = Table(normalized_rows, colWidths=col_widths, repeatRows=1)
+    table_style = [
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1e3a8a")),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),
+        ('BOX', (0, 0), (-1, -1), 1, colors.HexColor("#94a3b8")),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('LEFTPADDING', (0, 0), (-1, -1), 4),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+    ]
+    # Alternating row colors
+    for i in range(1, len(normalized_rows)):
+        bg = colors.HexColor("#f8fafc") if i % 2 == 1 else colors.white
+        table_style.append(('BACKGROUND', (0, i), (-1, i), bg))
+
+    t.setStyle(TableStyle(table_style))
+    return t
+
 def generate_pdf():
     pdf_filename = "Technical_Report_Ayaan_Mirza_241070043.pdf"
     doc = SimpleDocTemplate(
@@ -110,8 +166,8 @@ def generate_pdf():
         'SectionH1',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=14,
-        leading=18,
+        fontSize=13,
+        leading=17,
         textColor=colors.HexColor("#1e3a8a"),
         spaceBefore=14,
         spaceAfter=6,
@@ -121,8 +177,8 @@ def generate_pdf():
         'SectionH2',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=11,
-        leading=15,
+        fontSize=10.5,
+        leading=14.5,
         textColor=colors.HexColor("#0369a1"),
         spaceBefore=10,
         spaceAfter=4,
@@ -132,8 +188,8 @@ def generate_pdf():
         'QuestionTitle',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=10,
-        leading=14,
+        fontSize=9.5,
+        leading=13.5,
         textColor=colors.HexColor("#b91c1c"),
         spaceBefore=8,
         spaceAfter=3,
@@ -143,8 +199,8 @@ def generate_pdf():
         'BodyDark',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=9,
-        leading=13,
+        fontSize=8.5,
+        leading=12.5,
         textColor=colors.HexColor("#334155"),
         spaceAfter=5
     )
@@ -152,11 +208,27 @@ def generate_pdf():
         'BulletText',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=9,
-        leading=13,
+        fontSize=8.5,
+        leading=12.5,
         textColor=colors.HexColor("#334155"),
         leftIndent=12,
         spaceAfter=3
+    )
+    th_style = ParagraphStyle(
+        'TableTH',
+        parent=styles['Normal'],
+        fontName='Helvetica-Bold',
+        fontSize=7.5,
+        leading=9.5,
+        textColor=colors.white
+    )
+    tb_style = ParagraphStyle(
+        'TableTB',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=7,
+        leading=9,
+        textColor=colors.HexColor("#1e293b")
     )
 
     story = []
@@ -177,7 +249,7 @@ def generate_pdf():
         ],
         [
             Paragraph("<b>Methodology:</b> Mandatory Vibe Coding / AI-Assisted Development", meta_box_style),
-            Paragraph("<b>Verification:</b> Pytest Automated Suite (12/12 Passing)", meta_box_style)
+            Paragraph("<b>Verification:</b> Pytest Automated Suite (14/14 Passing)", meta_box_style)
         ]
     ]
     meta_table = Table(meta_data, colWidths=[250, 250])
@@ -197,13 +269,29 @@ def generate_pdf():
     with open("TECHNICAL_REPORT.md", "r", encoding="utf-8") as f:
         lines = f.readlines()
 
-    # Parse and build flowables
-    in_exec_summary = False
-    in_section1 = False
-    in_section2 = False
+    # Parse and build flowables with table buffer support
+    table_buffer = []
+
+    def flush_table_buffer():
+        nonlocal table_buffer
+        if table_buffer:
+            tbl = build_reportlab_table(table_buffer, th_style, tb_style)
+            if tbl:
+                story.append(Spacer(1, 4))
+                story.append(tbl)
+                story.append(Spacer(1, 8))
+            table_buffer = []
 
     for line in lines:
         raw = line.strip()
+
+        # If inside a table block
+        if raw.startswith("|"):
+            table_buffer.append(raw)
+            continue
+        else:
+            flush_table_buffer()
+
         if not raw:
             continue
 
@@ -214,7 +302,6 @@ def generate_pdf():
         if raw.startswith("## Executive Summary"):
             story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#0284c7"), spaceBefore=8, spaceAfter=8))
             story.append(Paragraph("Executive Summary", h1_style))
-            in_exec_summary = True
             continue
 
         if raw.startswith("## 1. Track-by-Track"):
@@ -229,18 +316,24 @@ def generate_pdf():
             story.append(Paragraph("2. Compulsory Final Questions (Section 11 Answers)", h1_style))
             continue
 
-        if raw.startswith("## 3. Conclusion"):
+        if raw.startswith("## 3. AI Tools Register"):
             story.append(Spacer(1, 10))
             story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#0284c7"), spaceBefore=10, spaceAfter=8))
-            story.append(Paragraph("3. Conclusion & Vibe Coding Reflections", h1_style))
+            story.append(Paragraph("3. AI Tools Register & Vibe Coding Failure Log Summary", h1_style))
             continue
 
-        if raw.startswith("### Track"):
-            story.append(Paragraph(clean_markdown_text(raw.replace("### ", "")), h2_style))
+        if raw.startswith("## 4. Conclusion") or raw.startswith("## 3. Conclusion"):
+            story.append(Spacer(1, 10))
+            story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#0284c7"), spaceBefore=10, spaceAfter=8))
+            story.append(Paragraph("4. Conclusion & Vibe Coding Reflections", h1_style))
             continue
 
-        if raw.startswith("### Q"):
-            story.append(Paragraph(clean_markdown_text(raw.replace("### ", "")), q_title_style))
+        if raw.startswith("### "):
+            header_text = raw.replace("### ", "")
+            if raw.startswith("### Q"):
+                story.append(Paragraph(clean_markdown_text(header_text), q_title_style))
+            else:
+                story.append(Paragraph(clean_markdown_text(header_text), h2_style))
             continue
 
         # Bullets
@@ -252,12 +345,20 @@ def generate_pdf():
         # Numbered list
         if re.match(r'^\d+\.\s', raw):
             num_body = clean_markdown_text(re.sub(r'^\d+\.\s', '', raw))
-            story.append(Paragraph(num_body, bullet_style))
+            story.append(Paragraph(f"<b>{raw[:3]}</b> {num_body}", bullet_style))
+            continue
+
+        # Horizontal rule in markdown
+        if raw == "---":
+            story.append(Spacer(1, 4))
             continue
 
         # Normal text paragraph
         clean_p = clean_markdown_text(raw)
         story.append(Paragraph(clean_p, body_style))
+
+    # Flush any remaining table at end
+    flush_table_buffer()
 
     # Build document
     doc.build(story, canvasmaker=NumberedCanvas)

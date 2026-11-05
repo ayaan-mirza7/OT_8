@@ -13,6 +13,21 @@ This report documents the completion of **Assignment 8: The 14-Day Vibe-Coding C
 
 Every algorithm specified in Section 5—including continuous first- and second-order methods, decoupled backpropagation, discrete branch-and-bound and ILP, QUBO/Ising models, quantum algorithms (QAOA, VQE, QFT, Shor, Grover, Annealing), submodular facility coverage, parallel speedup laws, federated learning (FedAvg), multi-task MGDA, compiler passes, operating system schedulers, and database index knapsacks—has been implemented from first principles and experimentally benchmarked.
 
+### Key Empirical Results Across All 10 Tracks
+
+| Track | Domain / Method | Baseline Metric | Optimized Metric | Measured Improvement | Correctness Verification |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Track A** | Continuous & Curvature | GD: 78 iterations to tol | Newton: 1 iteration; Adam: stable on noise | Machine precision on convex; robust on saddle | Decoupled analytical backprop verified |
+| **Track B** | Combinatorial & QUBO | Random assignment: Cut=4.5 | Exact / SA / Tabu: Cut=**9.0** | Global optimum cut achieved; 0% gap in ILP | Exact exhaustive search baseline |
+| **Track C** | Quantum QAOA & VQE | Classical exact cut: 9.0 | QAOA expected cut: **8.46** | **0.94 approximation ratio**; VQE converged | Statevector unitarity & shot convergence |
+| **Track D** | Submodular & Parallel | Static load balance: 1.62 | Work-stealing: **1.08**; FedAvg $E=5$ | Greedy coverage **0.91** $\ge (1 - 1/e) \approx 0.632$ | Zero submodularity violations in 100 trials |
+| **Track E** | Green Datacenter Case Study | First-Fit: $76.84, 118.4 kg $CO_2$ | GA: **$49.33, 74.1 kg $CO_2$** | **35.8% cost cut, 37.4% carbon cut** | **0 SLA violations**; hard constraints satisfied |
+| **Track F** | Compiler Passes & RegAlloc | Dynamic Insts: 32, Cycles: 53 | Dynamic Insts: **20**, Cycles: **32** | **37.5% instruction reduction, 39.6% cycle cut** | Byte-identical output `[40, 6550]` |
+| **Track G** | xv6 OS Scheduling | Round-Robin resp: 2.3 ticks | MLFQ resp: **0.2 ticks** | **91.3% interactive response speedup** | xv6 boots cleanly; user benchmarks pass |
+| **Track H** | DBMS Workload Indexing | Table Scans: 4.38 ms | Index Seeks: **1.39 ms** (Q1: 0.01 ms) | **3.15x overall speedup (165.4x on Q1)** | Query results 100% byte-identical |
+| **Track I** | Quantum Algorithms & QML | Classical search: $O(N)$ queries | Grover: $O(\sqrt{N})$ queries | Asymptotic quantum query speedup proved | 7 algorithms verified; honest negative sim result |
+| **Track J** | Software Eng (1,011 LOC) | All tests: 2062.2 ms | ILP Minimized: **285.0 ms** | **86.2% CI test time reduction** | **100% branch coverage (50/50)** preserved |
+
 ---
 
 ## 1. Track-by-Track Technical Breakdown & Experimental Outcomes
@@ -163,7 +178,7 @@ In every track, optimized methods delivered measurable improvements over baselin
 4. **Local Epochs in FedAvg:** Increasing local epochs $E$ reduces communication bandwidth but introduces client drift under highly non-IID partitions.
 
 ### Q6: What evidence demonstrates that your results are correct and reproducible?
-- All 12 automated test cases in `tests/test_all_tracks.py` pass (`12 passed in 1.43s`).
+- All 14 automated test cases in `tests/test_all_tracks.py` pass (`14 passed in 0.74s`).
 - Deterministic pseudo-random seeds (`seed=42`) were fixed across all synthetic datasets and benchmark runs.
 - **Strict Equivalence Checks:** Track F compiler outputs (`[40, 6550]`) and Track H DBMS query result rows matched 100% identically between unoptimized and optimized code.
 - All experiment scripts write raw CSVs and high-resolution PNG plots into reproducible directory structures.
@@ -193,6 +208,23 @@ In every track, optimized methods delivered measurable improvements over baselin
 
 ---
 
-## 3. Conclusion
+## 3. AI Tools Register & Vibe Coding Failure Log Summary
+
+### AI Tools Register
+
+| AI Tool / Assistant | Model Version | Experiment Tracks Covered | Dates Active | Nature of Work Performed |
+| :--- | :--- | :--- | :--- | :--- |
+| **Antigravity IDE Assistant** | Gemini 3.8 Flash | Tracks A to J, Core, Tests, Demo | 2026-10-29 – 2026-10-31 | Architectural formulation, code drafting, unit tests, automated reports |
+| **Claude Code** | Claude 3.5 Sonnet | Track F (Compiler), Track I (Quantum), Track G (xv6) | 2026-10-29 | Kempe coloring audit, Shor order-finding verification, xv6 lock inspection |
+| **ChatGPT (OpenAI)** | GPT-4o | Track E (Green Datacenter), Track H (DBMS) | 2026-10-29 | Power model formulation check, TPC-H index knapsack formulation validation |
+
+### Documented AI Failure Log
+1. **Track B (SciPy MILP Bounds Crash):** AI generated `bounds=[(0, 1) for _ in range(N)]` which caused `ValueError: bounds must be convertible into an instance of scipy.optimize.Bounds`. Fixed by importing and instantiating `scipy.optimize.Bounds(lb=0.0, ub=1.0)`. Lesson: API signatures in modern numerical libraries change; verify against installed documentation.
+2. **Track D (Federated Binary Cross-Entropy Shape Mismatch):** AI subtracted 2D label vector `(N, 1)` from 1D probability vector `(N,)`, creating an unexpected `(N, N)` matrix during NumPy broadcasting. Fixed via `y.ravel()`. Lesson: Matrix calculus prompts require defensive shape checks.
+3. **Track H (DBMS Index Selection Ignored without ANALYZE):** AI generated SQLite secondary indexes without issuing `ANALYZE;`. SQLite's cost-based query planner defaulted to table scans, giving 0.79x speedup. Fixed by adding `ANALYZE;`, providing SQLite with table cardinality statistics and enabling index seeks for a 3.15x speedup. Lesson: Database query planners rely on statistical metadata catalogs.
+
+---
+
+## 4. Conclusion
 
 Assignment 8 demonstrates that optimization is not simply about writing faster code—it requires systematically identifying inefficiencies, establishing rigorous baselines, formulating decision variables and constraints, selecting appropriate algorithmic strategies from Chapter 6, and defending the results with reproducible empirical evidence. Using AI as a collaborative vibe-coding partner accelerated development while requiring vigilant human verification to catch subtle numerical, API, and architectural failures.
