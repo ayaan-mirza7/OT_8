@@ -33,6 +33,7 @@ Every algorithm specified in Section 5—including continuous first- and second-
 ## 1. Track-by-Track Technical Breakdown & Experimental Outcomes
 
 ### Track A: Continuous Optimization & Curvature
+- **Artifacts:** Code: [landscapes.py](tracks/track_a_continuous/landscapes.py), [optimizers.py](tracks/track_a_continuous/optimizers.py), [neural_net.py](tracks/track_a_continuous/neural_net.py) | Results: [benchmark_summary.csv](tracks/track_a_continuous/results/benchmark_summary.csv), [track_a_convergence_plots.png](tracks/track_a_continuous/results/track_a_convergence_plots.png)
 - **Objective:** Minimize mathematical loss landscapes with differing curvature properties (strongly convex quadratic, non-convex Rosenbrock valley, and non-convex saddle-point functions), and decouple backpropagation from optimizer updates in a 2-layer Neural Network.
 - **Formulation:** 
   $$\min_{\theta} L(\theta) \quad \text{s.t.} \quad \theta \in \mathbb{R}^D$$
@@ -44,6 +45,7 @@ Every algorithm specified in Section 5—including continuous first- and second-
   - **Backpropagation Decoupling:** In `SmallMLP`, `backward(y)` computes pure analytical gradients $\nabla_W L$ via the multivariable chain rule into `grads` without altering parameter values, proving architectural independence from the optimizer step.
 
 ### Track B: Discrete Optimization & Combinatorial Formulations
+- **Artifacts:** Code: [combinatorial_solvers.py](tracks/track_b_discrete/combinatorial_solvers.py), [qubo_formulation.py](tracks/track_b_discrete/qubo_formulation.py), [classical_qubo_solvers.py](tracks/track_b_discrete/classical_qubo_solvers.py) | Results: [knapsack_benchmark.csv](tracks/track_b_discrete/results/knapsack_benchmark.csv), [maxcut_qubo_benchmark.csv](tracks/track_b_discrete/results/maxcut_qubo_benchmark.csv), [track_b_discrete_plots.png](tracks/track_b_discrete/results/track_b_discrete_plots.png)
 - **Objective:** Solve 0-1 resource allocation and combinatorial graph partitioning, establishing exact baselines for quantum benchmarks.
 - **Formulation:**
   - **0-1 Knapsack:** $\max \sum v_i x_i$ s.t. $\sum w_i x_i \le W, x_i \in \{0, 1\}$. Solved via Greedy, Dynamic Programming ($O(NW)$), Branch-and-Bound with fractional LP relaxation, and 0-1 ILP.
@@ -55,6 +57,7 @@ Every algorithm specified in Section 5—including continuous first- and second-
   - Cardinality Penalty: At $\lambda \ge 5.0$, 100% of optimal assignments strictly obeyed the cardinality constraint $\sum x_i = 3$.
 
 ### Track C: Quantum Optimization (QAOA, VQE & Hardware Limits)
+- **Artifacts:** Code: [qaoa.py](tracks/track_c_quantum/qaoa.py), [vqe.py](tracks/track_c_quantum/vqe.py), [simulator.py](tracks/track_c_quantum/simulator.py), [gradients.py](tracks/track_c_quantum/gradients.py), [barren_plateau.py](tracks/track_c_quantum/barren_plateau.py) | Results: [qaoa_vs_classical.csv](tracks/track_c_quantum/results/qaoa_vs_classical.csv), [barren_plateau_scaling.csv](tracks/track_c_quantum/results/barren_plateau_scaling.csv), [track_c_quantum_plots.png](tracks/track_c_quantum/results/track_c_quantum_plots.png)
 - **Objective:** Solve Track B's Max-Cut QUBO on a statevector simulator using QAOA, solve ground-state energy with VQE, and measure the real physical constraints of NISQ devices.
 - **Algorithms:** QAOA ($p=2$ alternating layers), VQE (hardware-efficient parameterized ansatz), Parameter-Shift Rule, SPSA, and Quantum Natural Gradient.
 - **Measured Results:**
@@ -65,6 +68,7 @@ Every algorithm specified in Section 5—including continuous first- and second-
     $$\text{Var}_{\theta}\left[\frac{\partial \langle H \rangle}{\partial \theta_k}\right] \in O(2^{-N})$$
 
 ### Track D: Submodular, Parallel & Distributed Optimization
+- **Artifacts:** Code: [submodular.py](tracks/track_d_parallel_distributed/submodular.py), [parallel_runtime.py](tracks/track_d_parallel_distributed/parallel_runtime.py), [federated.py](tracks/track_d_parallel_distributed/federated.py), [multi_task.py](tracks/track_d_parallel_distributed/multi_task.py) | Results: [parallel_scaling.csv](tracks/track_d_parallel_distributed/results/parallel_scaling.csv), [federated_benchmark.csv](tracks/track_d_parallel_distributed/results/federated_benchmark.csv), [track_d_plots.png](tracks/track_d_parallel_distributed/results/track_d_plots.png)
 - **Objective:** Demonstrate submodular diminishing returns, parallel speedup laws, work-stealing load balancing, federated learning (FedAvg), and multi-task gradient conflict resolution.
 - **Measured Results:**
   - **Submodularity:** Facility location coverage verified diminishing returns $f(A \cup \{e\}) - f(A) \ge f(B \cup \{e\}) - f(B)$ across 100 randomized subset trials with **0 violations**. Greedy selection achieved an empirical approximation ratio of **0.91**, easily surpassing the theoretical lower bound of $(1 - 1/e) \approx 0.632$.
@@ -74,6 +78,7 @@ Every algorithm specified in Section 5—including continuous first- and second-
   - **Multi-Task Optimization:** On competing gradient directions, Multiple-Gradient Descent Algorithm (MGDA) found the minimum-norm Pareto consensus point, preventing negative task transfer seen under naive equal weighting.
 
 ### Track E: Main Case Study — Green Datacenter Workload & Energy-Carbon Optimization
+- **Artifacts:** Code: [problem_formulation.py](tracks/track_e_case_study/problem_formulation.py), [solvers.py](tracks/track_e_case_study/solvers.py), [strategy_table.py](tracks/track_e_case_study/strategy_table.py) | Results: [case_study_summary.csv](tracks/track_e_case_study/results/case_study_summary.csv), [track_e_case_study_plots.png](tracks/track_e_case_study/results/track_e_case_study_plots.png) | Dedicated Case Study: [CASE_STUDY.md](CASE_STUDY.md)
 - **Problem Statement:** 24-hour scheduling of compute workloads across heterogeneous server clusters under dynamic Time-of-Use electricity tariffs ($\$ / kWh$) and time-varying grid carbon emissions ($gCO_2 / kWh$ with solar peaks).
 - **Mathematical Formulation:**
   $$\min \sum_{t=1}^{24} \left[ \left(\text{Tariff}(t) + \beta \cdot \text{Carbon}(t)\right) \sum_{j=1}^M P(u_{jt}) \right] + \sum_{i=1}^N \lambda \cdot \max(0, \text{finish}_i - \text{deadline}_i)$$
@@ -84,6 +89,7 @@ Every algorithm specified in Section 5—including continuous first- and second-
   - **Genetic Algorithm (GA):** Population-based metaheuristic with tournament selection and SLA repair. Total Operational Cost: **\$49.33 (35.8% cost reduction)**, Carbon Emissions: **74.1 kg $CO_2$ (37.4% carbon abatement)**, with **0 SLA violations**.
 
 ### Track F: Compiler Optimization Passes & ILP Register Allocation
+- **Artifacts:** Code: [ir.py](tracks/track_f_compiler/ir.py), [passes.py](tracks/track_f_compiler/passes.py), [code_gen.py](tracks/track_f_compiler/code_gen.py), [reg_alloc.py](tracks/track_f_compiler/reg_alloc.py) | Results: [optimization_pipeline_summary.csv](tracks/track_f_compiler/results/optimization_pipeline_summary.csv), [track_f_compiler_plots.png](tracks/track_f_compiler/results/track_f_compiler_plots.png)
 - **Objective:** Construct a Three-Address Code (TAC) intermediate representation compiler pipeline with passes that provably optimize instruction count and cycle times without altering semantics.
 - **Passes Implemented:**
   1. Constant Folding & Forward Propagation
@@ -96,6 +102,7 @@ Every algorithm specified in Section 5—including continuous first- and second-
   - **Correctness Check:** Output log of unoptimized program `[40, 6550]` and optimized program `[40, 6550]` were **byte-for-byte identical**.
 
 ### Track G: xv6 Operating-System Scheduler Optimization
+- **Artifacts:** Code: [emulator.py](tracks/track_g_xv6/emulator.py), [xv6_mlfq_priority.patch](tracks/track_g_xv6/xv6_src/xv6_mlfq_priority.patch), [cow_fork.patch](tracks/track_g_xv6/xv6_src/cow_fork.patch) | Results: [xv6_scheduler_benchmarks.csv](tracks/track_g_xv6/results/xv6_scheduler_benchmarks.csv), [track_g_xv6_plots.png](tracks/track_g_xv6/results/track_g_xv6_plots.png)
 - **Kernel Concepts Optimized:** Preemptive CPU scheduling, process starvation, and virtual memory page sharing.
 - **Kernel Features Added:**
   - Multilevel Feedback Queue (MLFQ) with 3 priority levels ($Q_0$: 1 tick, $Q_1$: 4 ticks, $Q_2$: 8 ticks), demotion upon quantum exhaustion, periodic priority boost (every 100 ticks) to guarantee starvation freedom, and a `sys_setpriority` system call.
@@ -105,6 +112,7 @@ Every algorithm specified in Section 5—including continuous first- and second-
   - Stride scheduling achieved exact proportional-share CPU allocations matching ticket assignments with a Jain's fairness index of 0.548.
 
 ### Track H: DBMS Optimization & Index Selection Knapsack
+- **Artifacts:** Code: [schema_and_data.py](tracks/track_h_dbms/schema_and_data.py), [index_optimizer.py](tracks/track_h_dbms/index_optimizer.py) | Results: [index_selection_solvers.csv](tracks/track_h_dbms/results/index_selection_solvers.csv), [query_latency_and_plans.csv](tracks/track_h_dbms/results/query_latency_and_plans.csv), [track_h_dbms_plots.png](tracks/track_h_dbms/results/track_h_dbms_plots.png)
 - **Objective:** Optimize a synthetic TPC-H database workload on SQLite by selecting secondary indexes under a strict storage budget $B = 200$ KB.
 - **Mathematical Formulation:** 0-1 Knapsack maximizing aggregate latency reduction $\sum \Delta L_i x_i$ subject to $\sum S_i x_i \le B, x_i \in \{0, 1\}$.
 - **Experimental Findings:**
@@ -115,6 +123,7 @@ Every algorithm specified in Section 5—including continuous first- and second-
   - **Strict Correctness Check:** All query result sets before and after optimization matched 100% identically.
 
 ### Track I: Quantum Algorithms Suite & QML Advantage Reality Check
+- **Artifacts:** Code: [algorithms.py](tracks/track_i_quantum_advantage/algorithms.py), [qml_classifier.py](tracks/track_i_quantum_advantage/qml_classifier.py), [complexity_comparison.py](tracks/track_i_quantum_advantage/complexity_comparison.py) | Results: [quantum_algorithms_suite.json](tracks/track_i_quantum_advantage/results/quantum_algorithms_suite.json), [grover_vs_linear_search.csv](tracks/track_i_quantum_advantage/results/grover_vs_linear_search.csv), [qml_vs_classical.csv](tracks/track_i_quantum_advantage/results/qml_vs_classical.csv), [track_i_quantum_plots.png](tracks/track_i_quantum_advantage/results/track_i_quantum_plots.png)
 - **Quantum Algorithms Implemented from Scratch:**
   1. *Deutsch-Jozsa:* 1-query deterministic classification of constant vs balanced functions.
   2. *Bernstein-Vazirani:* 1-query exact recovery of hidden bitstring (`1011`).
@@ -129,6 +138,7 @@ Every algorithm specified in Section 5—including continuous first- and second-
 - **The Honest Negative Result:** While Grover demonstrates quadratic asymptotic query advantage ($O(\sqrt{N})$ vs $O(N)$), simulating quantum statevectors on classical computers incurs an exponential memory and matrix-vector multiplication overhead of $O(2^N)$, resulting in classical simulation runtimes that were up to **$225\times$ slower** than classical linear search. Real quantum advantage requires physical, fault-tolerant QPU hardware with thousands of physical qubits.
 
 ### Track J: Software-Engineering Optimization on Non-Trivial Codebase
+- **Artifacts:** Code: [test_optimizer.py](tracks/track_j_software_engineering/test_optimizer.py), [codebase/](tracks/track_j_software_engineering/codebase/) | Results: [test_optimization_summary.csv](tracks/track_j_software_engineering/results/test_optimization_summary.csv), [track_j_software_engineering_plots.png](tracks/track_j_software_engineering/results/track_j_software_engineering_plots.png)
 - **Codebase Scale:** Engineered an 8-module analytics and data processing infrastructure totaling **1,011 Lines of Code** (surpassing the 1,000 LOC requirement).
 - **Problem Formulation:** Test-Suite Minimization (TSM) formulated as 0-1 ILP Set Cover:
   $$\min_{x} \sum_{i=1}^{40} t_i x_i \quad \text{s.t.} \quad \sum_{i: b \in B_i} x_i \ge 1 \quad \forall b \in \{1, \dots, 50\}, \quad x_i \in \{0, 1\}$$
@@ -225,6 +235,13 @@ In every track, optimized methods delivered measurable improvements over baselin
 
 ---
 
-## 4. Conclusion
+## 4. Conclusion & Possible Next Steps
 
+### Summary of Findings
 Assignment 8 demonstrates that optimization is not simply about writing faster code—it requires systematically identifying inefficiencies, establishing rigorous baselines, formulating decision variables and constraints, selecting appropriate algorithmic strategies from Chapter 6, and defending the results with reproducible empirical evidence. Using AI as a collaborative vibe-coding partner accelerated development while requiring vigilant human verification to catch subtle numerical, API, and architectural failures.
+
+### Possible Next Steps & Future Extensions
+1. **Physical QPU Hardware Execution:** Execute the Track C QAOA and Track I Grover algorithms on real physical QPUs (e.g., IBM Quantum via Qiskit Runtime) and benchmark Zero-Noise Extrapolation (ZNE) and readout error mitigation against our measured depolarizing noise simulations.
+2. **Distributed Cluster Scheduling:** Scale Track E's datacenter scheduler from $N=40$ synthetic batch jobs to $N \ge 100,000$ distributed Ray/Kubernetes tasks, implementing real-time streaming Green Greedy with distributed battery energy storage (BESS) integration.
+3. **Compiler Polyhedral Loop Transformations:** Extend Track F's TAC pipeline with polyhedral loop tiling, loop fusion, and SIMD vectorization passes to target modern multicore AVX-512 and GPU tensor cores.
+4. **Machine-Learning Powered DBMS Index Selection:** Integrate deep reinforcement learning or learned cost models into Track H's index selector to dynamically adapt to non-stationary OLTP/OLAP hybrid workloads.

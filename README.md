@@ -61,7 +61,7 @@ OT_8/
 ### Installation
 Clone the repository and install the standard scientific computing packages:
 ```bash
-git clone https://github.com/ayaanmirza/OT_8.git
+git clone https://github.com/ayaan-mirza7/OT_8.git
 cd OT_8
 
 # Optional: Create and activate a virtual environment
@@ -155,9 +155,24 @@ In accordance with Sections 8 and 9 of the assignment instructions:
 ---
 
 ## 📄 Key Documentation Links
-- [Complete Technical Report](file:///TECHNICAL_REPORT.md)
+- [Complete Technical Report (Markdown)](file:///TECHNICAL_REPORT.md)
+- [Complete Technical Report (Publication PDF)](file:///Technical_Report_Ayaan_Mirza_241070043.pdf)
+- [Main Process Case Study (Green Datacenter)](file:///CASE_STUDY.md)
 - [Chapter 6 Coverage Checklist](file:///CHAPTER_6_CHECKLIST.md)
 - [AI Tools Register & Failure Log](file:///AI_TOOLS_REGISTER.md)
+
+---
+
+## 📦 External Libraries & Components Acknowledged
+
+In accordance with Section 9 of the assignment instructions, all external dependencies are listed in `requirements.txt`:
+- **NumPy (`numpy>=1.24.0`):** Vectorized numerical operations, statevector linear algebra, and multivariable matrix calculus.
+- **SciPy (`scipy>=1.10.0`):** Linear programming relaxation, exact Highs mixed-integer linear programming (`milp`), and numerical Hessian approximations.
+- **Matplotlib (`matplotlib>=3.7.0`):** Publication-quality convergence plots, phase diagrams, and performance scaling charts across all 10 tracks.
+- **Pandas (`pandas>=2.0.0`):** Structured benchmark metric tabular logging and summary CSV generation.
+- **Scikit-Learn (`scikit-learn>=1.2.0`):** Synthetic dataset generators and classification performance validation baselines.
+- **Pytest (`pytest>=7.0.0`):** Automated test suite for multi-track mathematical and computational correctness checks.
+- **ReportLab & PyPDF (`reportlab>=3.6.0`, `pypdf>=3.0.0`):** Dynamic academic PDF compilation from markdown technical report.
 
 ---
 *Created by Ayaan Mirza (Roll No: 241070043) for Optimization Techniques Lab Assignment 8.*
